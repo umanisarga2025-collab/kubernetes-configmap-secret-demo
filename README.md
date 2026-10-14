@@ -199,6 +199,31 @@ Files:
 - app/Dockerfile: Container image build instructions.
 - web-deployment.yaml: Kubernetes Deployment for the Flask app.
 
+### Security configuration
+
+The Flask Deployment uses several Kubernetes security controls:
+
+- **Non-root user and group:** `runAsUser: 10001` and `runAsGroup: 10001`.
+- **Privilege escalation disabled:** `allowPrivilegeEscalation: false`.
+- **Linux capabilities dropped:** `capabilities.drop: ["ALL"]`.
+- **Resource requests:** CPU `100m`, memory `64Mi`.
+- **Resource limits:** CPU `500m`, memory `128Mi`.
+- **ServiceAccount:** Uses the dedicated `config-secret-web` ServiceAccount.
+- **Token automount disabled:** `automountServiceAccountToken: false`, because this application does not need to call the Kubernetes API.
+
+Verify the container identity:
+
+    kubectl exec deployment/config-secret-web -- id
+
+Expected output:
+
+    uid=10001 gid=10001 groups=10001
+
+Inspect the Deployment's security configuration:
+
+    kubectl get deployment config-secret-web -o yaml
+
+These settings reduce unnecessary privileges and help limit resource consumption. They do not replace RBAC, Secret protection, network controls, or other production security measures.
 ### Build the image
 
 Run from the project root:

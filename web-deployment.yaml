@@ -12,10 +12,27 @@ spec:
       labels:
         app: config-secret-web
     spec:
+      serviceAccountName: config-secret-web
+      automountServiceAccountToken: false
       containers:
         - name: web
           image: config-secret-app:1.0
           imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "128Mi"
           ports:
             - containerPort: 8080
           envFrom:
